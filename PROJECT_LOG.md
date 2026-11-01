@@ -35,6 +35,8 @@ The running record of what changed and why. Newest entries go at the bottom of e
 | 21 | 2026-11-02 | Show the failed last deployment in the overview, from `operationState` | Fake a status per history row | Answers issue 5 honestly: history itself only stores successes | Claude |
 | 22 | 2026-11-02 | Restart `student-portal` pods on each release with a `release` annotation | Wait for the ConfigMap lag | The lag made a good sync look broken during a demo | Claude |
 | 23 | 2026-11-02 | Stream the Docker build context from WSL as a tar file | Move the repo to Windows; turn on WSL integration | `ui/tsconfig.json` is a symlink, which Docker cannot read over `\\wsl.localhost` | Claude |
+| 24 | 2026-11-02 | Make `deployflow-dev` the default branch | Keep `master` | Visitors now see DeployFlow's README instead of Argo CD's | Owner |
+| 25 | 2026-11-02 | Remove the GitHub fork link with Leave fork network | Keep the fork; delete and recreate the repo | Owner wants a standalone repo. The option is permanent, but this repo has no issues, pull requests, stars or child forks to lose. `LICENSE`, `NOTICE` and the README attribution stay. Status: waiting for the owner to click it, because GitHub has no API for it | Owner |
 
 ## Changes
 
@@ -67,6 +69,7 @@ Everything changed so far. No Argo CD source code has been modified.
 | 2026-11-02 | Created the fork `muralibolisetti/deployflow` |
 | 2026-11-02 | Pushed branch `deployflow-dev` |
 | 2026-11-02 | Created the public repository `muralibolisetti/student-portal` |
+| 2026-11-02 | Changed the default branch of `deployflow` to `deployflow-dev` |
 
 ### This computer
 

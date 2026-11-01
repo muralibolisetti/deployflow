@@ -1,0 +1,5 @@
+# Local demo only. Serves the Argo CD API and UI over plain HTTP so the
+# in-app browser can load them. Reach it only through a port-forward bound
+# to 127.0.0.1, and never use this setting on a shared or public cluster.
+data:
+  server.insecure: "true"

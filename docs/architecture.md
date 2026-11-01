@@ -7,7 +7,7 @@
 
 This is a focused audit of the code paths DeployFlow depends on. It is not a review of the whole repository. `applicationset/`, `cmpserver/`, the hydrator, notifications and most of `util/` were not audited. Only the UI's data layer and its package and folder structure were read, not its components in depth.
 
-Every claim here comes from reading the source, except where it is marked **Predicted**. Predicted items follow from the code but have not been observed running. Nothing in this document has been run yet: the cluster does not exist until Phase 4.
+Every claim here comes from reading the source, except where it is marked **Predicted**. Predicted items followed from the code when this was written. Most have since been confirmed on a running system: see section 8 and [testing.md](testing.md).
 
 The DeployFlow design itself is decided in Phase 5. This document records the facts that decision needs.
 
@@ -236,14 +236,16 @@ The fields each screen needs:
 | UI API calls | `ui/src/app/shared/services/applications-service.ts` | sync 279, rollback 305 |
 | Install manifests | `manifests/install.yaml` | Generated from `manifests/base/` |
 
-## 8. To confirm once the system is running
+## 8. Confirmed on the running system
 
-1. Scaling Dex, notifications and ApplicationSet to zero does not break the core features.
-2. Actual memory use on this laptop.
-3. S1: drift appears when `replicas` is set in Git.
-4. S2: the app shows `OutOfSync` after a rollback.
-5. S4: self-heal adds no history row.
-6. Whether `/shared/app` can serve a dashboard on the same origin.
+Tested on 2026-11-02. Full results are in [testing.md](testing.md).
+
+1. Scaling Dex, notifications and ApplicationSet to zero does not break the core features: **confirmed**, saving about 170 MB.
+2. Actual memory use on this laptop: **about 1.9 GiB** for the cluster, Argo CD and the sample app.
+3. S1, drift appears when `replicas` is set in Git: **confirmed**.
+4. S2, the app shows `OutOfSync` after a rollback: **confirmed**.
+5. S4, self-heal adds no history row: **confirmed**.
+6. Whether `/shared/app` can serve a dashboard on the same origin: **not tested yet**.
 
 ## 9. Attribution
 

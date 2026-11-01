@@ -25,7 +25,7 @@ DeployFlow is a college project: a separately branded dashboard over an unmodifi
 | 2026-11-02 | Pin Argo CD `v3.5.6`, commit `c2b1e3017` | Latest stable release at start; source and manifests match. To be confirmed by the Phase 4 baseline |
 | 2026-11-02 | No upstream Go or UI build planned | Published images are enough for the baseline |
 
-Frontend architecture is not decided yet; that happens in Phase 5.
+The full decision history is in `PROJECT_LOG.md`. Frontend architecture is not decided yet; that happens in Phase 5.
 
 ## Progress
 
@@ -35,15 +35,15 @@ Status values: Not started, In progress, Blocked, Completed, Tested.
 |---|---|---|
 | 1. GitHub and project setup | Completed | |
 | 2. Repository analysis | Completed | See `docs/architecture.md` |
-| 3. Environment preparation | Not started | |
-| 4. Run Argo CD baseline | Not started | |
-| 5. Design DeployFlow architecture | Not started | |
+| 3. Environment preparation | Completed | Docker Desktop Kubernetes; see `docs/setup.md` |
+| 4. Run Argo CD baseline | Tested | Built-in UI; see `docs/testing.md` |
+| 5. Design DeployFlow architecture | Not started | Needs the owner's frontend decision |
 | 6. Implement custom interface | Not started | |
 | 7. Integrate core functionality | Not started | |
-| 8. Demonstration application | Not started | |
-| 9. Testing | Not started | |
+| 8. Demonstration application | In progress | `student-portal` deployed; ConfigMap restart fix still to do |
+| 9. Testing | In progress | Backend tested on the built-in UI; must be repeated through DeployFlow |
 | 10. Final preparation | Not started | |
 
 ## Known issues
 
-None yet. Items still to confirm at runtime are listed in `docs/architecture.md`, section 8.
+See the Issues section of `PROJECT_LOG.md`.

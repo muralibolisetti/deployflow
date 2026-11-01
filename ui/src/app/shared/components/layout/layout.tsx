@@ -12,7 +12,7 @@ export interface LayoutProps {
     pref: ViewPreferences;
 }
 
-const getBGColor = (theme: string): string => (theme === 'light' ? '#dee6eb' : '#100f0f');
+const getBGColor = (theme: string): string => (theme === 'light' ? '#f6f5f1' : '#171816');
 
 export const ThemeWrapper = (props: {children: React.ReactNode; theme: string}) => {
     const [systemTheme] = useTheme({

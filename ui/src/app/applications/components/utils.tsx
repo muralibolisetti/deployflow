@@ -419,7 +419,7 @@ const deletePodAction = async (ctx: ContextApis, pod: appModels.ResourceNode, ap
                 <div className='argo-form-row' style={{paddingLeft: '30px'}}>
                     <CheckboxField id='force-delete-checkbox' field='force' />
                     <label htmlFor='force-delete-checkbox'>Force delete</label>
-                    <HelpIcon title='If checked, Argo will ignore any configured grace period and delete the resource immediately' />
+                    <HelpIcon title='If checked, DeployFlow will ignore any configured grace period and delete the resource immediately' />
                 </div>
             </div>
         ),

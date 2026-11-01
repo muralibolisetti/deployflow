@@ -28,7 +28,7 @@ const settings = [
     },
     {
         title: 'Projects',
-        description: 'Configure Argo CD projects',
+        description: 'Configure DeployFlow projects',
         path: './projects'
     },
     {

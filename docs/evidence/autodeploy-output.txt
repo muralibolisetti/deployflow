@@ -1,0 +1,5 @@
+Auto-sync on. Pushing v6 at 03:34:03
+b5f32fc Update portal to release v6
+PASS  Automatic deploy from Git - page showed v6 214 s after the push, no clicks
+Initiated by: {"automated":true}
+Auto-sync after test: '' (empty means off)

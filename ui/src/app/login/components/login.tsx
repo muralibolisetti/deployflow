@@ -72,14 +72,12 @@ export function Login(props: RouteComponentProps<{}>) {
 
     return (
         <div className='login'>
-            <div className='login__content show-for-medium'>
-                <div className='login__text'>Let's get stuff deployed!</div>
-                <div className='argo__logo' />
-            </div>
             <div className='login__box'>
-                <div className='login__logo width-control'>
-                    <img className='logo-image' src='assets/images/argo_o.svg' alt='argo' />
+                <div className='login__logo'>
+                    <img className='logo-image' src='assets/images/deployflow-mark.svg' alt='' />
+                    <span>DeployFlow</span>
                 </div>
+                <p className='login__subtitle'>Sign in to manage your deployments</p>
                 {ssoConfigured && (
                     <div className='login__box_saml width-control'>
                         <a href={`auth/login?return_url=${encodeURIComponent(returnUrl)}`}>
@@ -139,11 +137,6 @@ export function Login(props: RouteComponentProps<{}>) {
                 {authSettings && authSettings.userLoginsDisabled && !ssoConfigured && (
                     <div className='argo-form-row__error-msg'>Login is disabled. Please contact your system administrator.</div>
                 )}
-                <div className='login__footer'>
-                    <a href='https://argoproj.io' target='_blank'>
-                        <img className='logo-image' src='assets/images/argologo.svg' alt='argo' />
-                    </a>
-                </div>
             </div>
         </div>
     );

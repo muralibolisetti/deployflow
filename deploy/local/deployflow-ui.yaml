@@ -1,0 +1,49 @@
+# The DeployFlow web interface. Serves the customised UI and passes /api calls
+# to the unmodified Argo CD server. Local cluster only.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployflow-ui
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: deployflow-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: deployflow-ui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: deployflow-ui
+    spec:
+      containers:
+        - name: nginx
+          image: deployflow-ui:0.1.0
+          # Loaded directly into the cluster node, so there is nothing to pull.
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deployflow-ui
+  namespace: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: deployflow-ui
+  ports:
+    - port: 80
+      targetPort: 80

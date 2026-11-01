@@ -21,6 +21,8 @@ import userInfo from './user-info';
 import {AuthSettings, UserInfo} from './shared/models';
 import {SystemLevelExtension} from './shared/services/extensions-service';
 
+require('./deployflow-theme.scss');
+
 services.viewPreferences.init();
 const bases = document.getElementsByTagName('base');
 const base = bases.length > 0 ? bases[0].getAttribute('href') || '/' : '/';
@@ -56,32 +58,26 @@ interface NavItem {
 const navItems: NavItem[] = [
     {
         title: 'Applications',
-        tooltip: 'Manage your applications, and diagnose health problems.',
+        tooltip: 'See your deployments and their health.',
         path: '/applications',
-        iconClassName: 'argo-icon argo-icon-application'
-    },
-    {
-        title: 'ApplicationSets',
-        tooltip: 'Manage your ApplicationSets, and diagnose health problems.',
-        path: '/applicationsets',
-        iconClassName: 'argo-icon argo-icon-applicationset'
+        iconClassName: 'fa fa-layer-group'
     },
     {
         title: 'Settings',
-        tooltip: 'Manage your repositories, projects, settings',
+        tooltip: 'Manage repositories and projects.',
         path: '/settings',
-        iconClassName: 'argo-icon argo-icon-settings'
+        iconClassName: 'fa fa-gear'
     },
     {
-        title: 'User Info',
+        title: 'Account',
         path: '/user-info',
-        iconClassName: 'fa fa-user-circle'
+        iconClassName: 'fa fa-circle-user'
     },
     {
-        title: 'Documentation',
-        tooltip: 'Read the documentation, and get help and assistance.',
+        title: 'Help',
+        tooltip: 'Guides and project documentation.',
         path: '/help',
-        iconClassName: 'argo-icon argo-icon-docs'
+        iconClassName: 'fa fa-circle-question'
     }
 ];
 
@@ -238,7 +234,7 @@ export class App extends React.Component<
     public render() {
         if (this.state.error != null) {
             const stack = this.state.error.stack;
-            const url = 'https://github.com/argoproj/argo-cd/issues/new?labels=bug&template=bug_report.md';
+            const url = 'https://github.com/muralibolisetti/deployflow/issues/new';
 
             return (
                 <React.Fragment>
@@ -257,8 +253,7 @@ export class App extends React.Component<
             return (
                 <React.Fragment>
                     <Helmet>
-                        <link rel='icon' type='image/png' href={`${base}assets/favicon/favicon-32x32.png`} sizes='32x32' />
-                        <link rel='icon' type='image/png' href={`${base}assets/favicon/favicon-16x16.png`} sizes='16x16' />
+                        <link rel='icon' type='image/svg+xml' href={`${base}assets/images/deployflow-mark.svg`} />
                     </Helmet>
                     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', flexDirection: 'column', gap: '12px'}}>
                         <Spinner show={true} />
@@ -272,7 +267,7 @@ export class App extends React.Component<
 
         // argo-ui's AppContext requires a `router`, but this provider sits above <Router> so there is no
         // route match yet — supply the current location with an empty match. The only fields argo-ui actually
-        // reads off this context are `apis` (DataLoader) and `router` (NavBar, unused in Argo CD).
+        // reads off this context are `apis` (DataLoader) and `router` (NavBar, unused in DeployFlow).
         const appContext: AppContext = {
             history,
             apis: {popup: this.popupManager, notifications: this.notificationsManager},
@@ -282,10 +277,9 @@ export class App extends React.Component<
         return (
             <React.Fragment>
                 <Helmet>
-                    <link rel='icon' type='image/png' href={`${base}assets/favicon/favicon-32x32.png`} sizes='32x32' />
-                    <link rel='icon' type='image/png' href={`${base}assets/favicon/favicon-16x16.png`} sizes='16x16' />
+                    <link rel='icon' type='image/svg+xml' href={`${base}assets/images/deployflow-mark.svg`} />
                 </Helmet>
-                <PageContext.Provider value={{title: 'Argo CD'}}>
+                <PageContext.Provider value={{title: 'DeployFlow'}}>
                     <Provider value={contextApis}>
                         {/*
                           argo-ui's class components (e.g. DataLoader) read context via the modern
@@ -383,7 +377,7 @@ export class App extends React.Component<
         const component = () => (
             <>
                 <Helmet>
-                    <title>{extension.title} - Argo CD</title>
+                    <title>{extension.title} - DeployFlow</title>
                 </Helmet>
                 <Page title={extension.title}>
                     <extension.component />

@@ -1,0 +1,13 @@
+DeployFlow
+Copyright 2026 muralibolisetti
+
+DeployFlow is an academic adaptation of Argo CD, which is developed by the
+Argo Project authors and licensed under the Apache License, Version 2.0.
+Source: https://github.com/argoproj/argo-cd
+
+This work is based on Argo CD v3.5.6. The files under ui/ were modified to
+give the web interface its own visual identity. The Argo CD backend is used
+unmodified. See docs/customizations.md for the list of changes.
+
+DeployFlow is not an official Argo Project product and is not endorsed by the
+Argo Project or the Cloud Native Computing Foundation.

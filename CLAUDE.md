@@ -22,10 +22,10 @@ DeployFlow is a college project: a separately branded dashboard over an unmodifi
 | Date | Decision | Reason |
 |---|---|---|
 | 2026-11-02 | Repo lives in WSL `Ubuntu` at `~/deployflow` | Chosen by the project owner |
-| 2026-11-02 | Pin Argo CD `v3.5.6`, commit `c2b1e3017` | Latest stable release at start; source and manifests match. To be confirmed by the Phase 4 baseline |
-| 2026-11-02 | No upstream Go or UI build planned | Published images are enough for the baseline |
+| 2026-11-02 | Pin Argo CD `v3.5.6`, commit `c2b1e3017` | Latest stable release at start; source and manifests match. Confirmed by the Phase 4 baseline |
+| 2026-11-02 | Customise the built-in UI and serve it from nginx | Chosen by the project owner; the Go backend stays unmodified |
 
-The full decision history is in `PROJECT_LOG.md`. Frontend architecture is not decided yet; that happens in Phase 5.
+The full decision history is in `PROJECT_LOG.md`.
 
 ## Progress
 
@@ -37,12 +37,12 @@ Status values: Not started, In progress, Blocked, Completed, Tested.
 | 2. Repository analysis | Completed | See `docs/architecture.md` |
 | 3. Environment preparation | Completed | Docker Desktop Kubernetes; see `docs/setup.md` |
 | 4. Run Argo CD baseline | Tested | Built-in UI; see `docs/testing.md` |
-| 5. Design DeployFlow architecture | Not started | Needs the owner's frontend decision |
-| 6. Implement custom interface | Not started | |
-| 7. Integrate core functionality | Not started | |
-| 8. Demonstration application | In progress | `student-portal` deployed; ConfigMap restart fix still to do |
-| 9. Testing | In progress | Backend tested on the built-in UI; must be repeated through DeployFlow |
-| 10. Final preparation | Not started | |
+| 5. Design DeployFlow architecture | Completed | `docs/architecture.md`, section 9 |
+| 6. Implement custom interface | Tested | `docs/customizations.md` |
+| 7. Integrate core functionality | Tested | Through `deployflow-ui` and nginx |
+| 8. Demonstration application | Tested | Separate repo `student-portal`, with the restart fix |
+| 9. Testing | Tested | `docs/testing.md` |
+| 10. Final preparation | Completed | Docs finished. The owner still needs to rehearse the demo |
 
 ## Known issues
 

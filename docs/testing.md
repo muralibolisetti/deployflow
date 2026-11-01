@@ -1,82 +1,92 @@
 # Testing report
 
 **Date:** 2026-11-02
-**System under test:** upstream Argo CD `v3.5.6` and its built-in web UI, on Docker Desktop Kubernetes `v1.36.1`, deploying the `student-portal` sample.
+**System under test:** DeployFlow `0.1.0` on Argo CD `v3.5.6`, Docker Desktop Kubernetes `v1.36.1`, with the `student-portal` sample.
 
-> **What this report covers:** the DeployFlow dashboard does not exist yet (Phases 5 to 7). These tests prove the backend features DeployFlow will rely on. They must be repeated through DeployFlow once it is built. Passing here does not mean DeployFlow is complete.
+Testing happened in two rounds. The first used the unmodified Argo CD UI to prove the backend. The second repeated the work through DeployFlow, across its nginx layer, which is what this report records.
 
 ## Summary
 
-| Group | Passed | Failed |
-|---|---|---|
-| Required tests | 10 | 0 |
-| Optional tests | 4 | 0 |
-| Audit predictions checked | 11 | 0 |
+| Group | Result |
+|---|---|
+| Scripted checks through DeployFlow | 28 checks: 27 passed, 1 failed its time limit, then passed on rerun |
+| Clicked through in the real interface | Sign-in, overview, sync, diff, auto-sync on and off, self-heal, history, rollback |
+| Upstream UI unit tests | 263 passed in 24 suites, with 32 snapshots |
+| TypeScript check | Passed |
+| Audit predictions checked | All confirmed, one timing corrected |
+
+Raw output: [retest-output.txt](evidence/retest-output.txt) and [autodeploy-output.txt](evidence/autodeploy-output.txt).
 
 ## Required tests
 
-| # | Objective | Steps | Expected | Actual | Result | Evidence |
-|---|---|---|---|---|---|---|
-| 1 | Connect a Git repository | Settings, Connect Repo, HTTPS, enter URL | Connection tested and saved | Status `Successful` | Pass | [Screenshot](evidence/01-repo-connected.jpg) |
-| 2 | List an application | New App form, Create | App listed, compared with Git | `OutOfSync` / `Missing` at `bf91eb3`; 3 resources listed; `kubectl` showed nothing deployed | Pass | `kubectl get application` |
-| 3 | Initial deployment | Sync, Synchronize | Resources created and running | `Synced` / `Healthy`, 2/2 pods, page served `v1`. Health showed `Progressing` until pods were ready | Pass | [Screenshot](evidence/03-first-sync.jpg) |
-| 4 | Detect drift | `kubectl scale --replicas=5` | App becomes `OutOfSync` | `OutOfSync` in **0.6 s**. Only the Deployment was flagged | Pass | [Diff, 5 vs 2](evidence/04-drift-diff.jpg) |
-| 5 | Manual sync fixes drift | View diff, Sync | Replicas return to Git's value | 5 returned to 2, `Synced` | Pass | `kubectl get deploy` |
-| 6 | Resource status | Open app details | Resources and health shown | Tree showed ConfigMap, Service, Deployment, ReplicaSet and pods with health and status | Pass | Resource tree, app details page |
-| 7 | Update through Git | Push v2, Refresh, Sync | Git change reaches the running app | Refresh found `4354208` in about **5 s**. Page changed to v2 about **37 s** after sync | Pass | [Screenshot](evidence/06-release-v2.jpg) |
-| 8 | History and rollback | History, Rollback to `bf91eb3`, OK | Previous version restored | Page back to v1 after about **40 s**. New history entry added. Git unchanged. App showed `OutOfSync` | Pass | [Screenshot](evidence/07-after-rollback.jpg) |
-| 9 | Error handling | (a) Connect a missing repo (b) Push `replicas: "two"`, Sync | Clear errors, running app unharmed | (a) "Repository not found", nothing saved (b) `Sync failed`, old pods kept serving v2 | Pass | [(a)](evidence/09a-repo-error.jpg), [(b)](evidence/09b-sync-failed.jpg) |
-| 10 | Refresh and state consistency | Compare API, `kubectl` and reloaded page | All agree | All agreed. An open page stopped updating while hidden; see [note 1](#notes-for-deployflow) | Pass | Network log, API responses |
+| # | Objective | Steps | Expected | Actual | Result |
+|---|---|---|---|---|---|
+| 1 | Sign in | Correct and wrong password, then no session | Only the correct password works | Session created; wrong password and no session both `401` | Pass |
+| 2 | Connect a Git repository | Check the connected repo; try a missing one | Repo connected; missing one refused | `Successful`; missing repo refused with HTTP `500` and a clear error in the UI | Pass |
+| 3 | Application listing | Overview and list | Real data | `student-portal` with counts and recent deployments | Pass |
+| 4 | Deployment | Sync | Resources running | `Synced` / `Healthy`, new pods within seconds | Pass |
+| 5 | Drift detection | `kubectl scale --replicas=5` | App becomes `OutOfSync` | `OutOfSync` in **0.9 s**, Deployment only | Pass |
+| 6 | Diff | Open Diff | Shows the change | Live 5, target 2 | Pass |
+| 7 | Manual sync | Sync | Replicas return to 2 | `Synced` in **3.1 s** | Pass |
+| 8 | Resource status | Open the tree | Resources and health shown | ConfigMap, Service, Deployment, ReplicaSets, Pods | Pass |
+| 9 | Update through Git | `release.sh v4`, Refresh, Sync | Page changes | Refresh in **1.8 s**; page on v4 **4.1 s** after sync | Pass |
+| 10 | History | Open History and rollback | Past deployments listed | Commit, author, time, initiator | Pass |
+| 11 | Rollback | Rollback to an older commit | Old page returns | Page back in **4.5 s**, and 5 s through the UI. App shows `OutOfSync` | Pass |
+| 12 | Forward again | Sync after rollback | Latest returns | Page on latest in **6.7 s** | Pass |
+| 13 | Failed deployment | Push `replicas: "two"`, Refresh, Sync | Reported clearly; app unharmed | Phase `Failed`, app kept serving v4, history unchanged, overview data shows 1 failure | Pass |
+| 14 | Recovery | Revert the bad commit, Sync | Healthy again | `Synced` / `Healthy` | Pass |
+| 15 | State consistency | Compare API, `kubectl` and the page | All agree | Agreed once the page was visible; see note 1 | Pass |
 
 ## Optional tests
 
-| # | Objective | Steps | Expected | Actual | Result |
-|---|---|---|---|---|---|
-| O1 | Self-healing | Enable auto-sync and self-heal, scale to 5 | Restored with no action | Back to 2 in **1.5 s**, initiated by `automated` | Pass |
-| O2 | Rollback blocked under auto-sync | `POST /rollback` | Refused | HTTP `400`: "rollback cannot be initiated when auto-sync is enabled" | Pass |
-| O3 | Automated sync from Git | Push v3, touch nothing | Found and deployed by polling | Deployed **125 s** after push. Page later showed v3 | Pass |
-| O4 | Run without optional components | Scale Dex, notifications and ApplicationSet to 0, repeat drift test | Core features keep working | Drift found in 0.4 s; saved about 170 MB. Components restored | Pass |
+| # | Objective | Result | Detail |
+|---|---|---|---|
+| O1 | Self-healing | Pass | Restored in **1.5 s**, and also when switched on through the UI |
+| O2 | No history from self-heal | Pass | History unchanged |
+| O3 | Rollback refused under auto-sync | Pass | HTTP `400` |
+| O4 | Automatic deploy from Git | **Failed, then passed** | Timed out at my 240 s limit. Rerun with a 7 minute limit: passed in **214 s**, initiated by `automated`. The first run's limit was too short, not a product fault |
+| O5 | Auto-sync off through the UI | Pass | Sync Policy shows `NONE`, and rollback then works |
+| O6 | Run without optional components | Pass | Tested in round one, saving about 170 MB |
 
-Login was also exercised throughout: UI sign-in worked, and an unauthenticated `GET /api/v1/applications` returned `401`.
+## Security and proxy checks
 
-## Audit predictions checked at runtime
-
-| Finding | Prediction | Outcome |
-|---|---|---|
-| D1 | No CORS headers for another origin | Confirmed: none returned for `Origin: http://localhost:5173` |
-| D4 | Sync response does not show the result | Confirmed: HTTP `200` for a sync that then failed |
-| D5 | `?refresh=normal` waits for reconciliation | Confirmed: returned the new revision |
-| D7 | Failed syncs are not in history | Confirmed: no entry added |
-| D8 | Each sync adds a history entry | Confirmed: same commit appears in more than one entry |
-| D9 | Rollback refused under auto-sync | Confirmed: HTTP `400` |
-| S1 | Explicit `replicas` shows drift | Confirmed |
-| S2 | App shows `OutOfSync` after rollback | Confirmed |
-| S3 | Git changes need Refresh or polling | Confirmed: `Synced` on the old commit until refreshed |
-| S4 | Self-heal adds no history entry | Confirmed: history unchanged |
-| Section 8 item 1 | Optional components can be off | Confirmed |
+| Check | Result |
+|---|---|
+| API without sign-in | `401` |
+| CORS headers for a foreign origin | None |
+| "Argo CD" in the served index page | None |
+| Password in saved logs and docs | None |
+| Upstream Git remote | Push blocked |
 
 ## Measurements
 
 | Measure | Result |
 |---|---|
-| Drift detection | 0.4 to 0.6 s |
+| Drift detection | Under 1 s |
 | Self-heal | 1.5 s |
-| Manual Refresh | About 5 s |
-| Auto-deploy after a Git push | 125 s |
-| ConfigMap reaching running pods | 37 to 85 s after sync |
-| Memory: cluster, Argo CD and app | 1.9 GiB (1.74 GiB with optional components off) |
+| Refresh | 1.8 to 5 s |
+| Page update after sync | About 4 s (was 37 to 85 s before the restart fix) |
+| Rollback to visible page | 4.5 to 5 s |
+| Automatic deploy from Git | 125 s, 214 s, and one over 240 s. The theoretical limit is about 6 minutes |
+| Memory: cluster, engine, UI and app | About 1.8 GiB |
 
-## Notes for DeployFlow
+## Findings
 
-1. **Hidden pages stop updating by design.** Argo CD's UI drops its live stream while `document.hidden` is true (`ui/src/app/applications/components/utils.tsx:1745-1755`). The stream itself worked and delivered an event in 40 ms. DeployFlow should reload state when a page becomes visible again.
-2. **ConfigMap changes lag behind a successful sync.** Mounted files update on the kubelet's schedule, and the lag varied from 37 to 85 s. The page looked wrong even though the sync had succeeded. In Phase 8, `student-portal` should also change a pod-template annotation with each release so that pods restart at once. Until then, the demo must allow for the lag.
-3. **A failed sync still returns HTTP `200`.** Use `status.operationState.phase` for the result.
-4. **A failed repository connection returns HTTP `500`.** The readable message is in the response body.
+1. **Hidden pages stop updating by design.** The UI drops its live stream while the tab is hidden, and resumes when it's visible. The overview does the same.
+2. **Heavy load can stall detection.** While the unit tests ran, one comparison took 37.5 s and logged `failed to get repo objects`, so drift went unnoticed for over 30 seconds. The exact cause isn't confirmed. GitHub was reachable, and it recovered without help. Don't run builds or tests during a demo.
+3. **Successful HTTP doesn't mean a successful deployment.** A failed sync returned `200`. The real result is in `status.operationState.phase`.
+4. **History holds only successful, full deployments.** The overview shows the latest failure separately.
+5. **Git polling is slower than it first appears.** Lookups are cached for 3 minutes on top of the polling cycle.
 
-## Not yet tested
+## Not tested
 
-- Anything in the DeployFlow dashboard, because it has not been built.
-- Serving a dashboard from `/shared/app`.
-- A `Degraded` application, such as a bad image.
-- Rebuilding the whole environment from `docs/setup.md`.
-- Testing on the Kind cluster originally planned. See decision 9 in [PROJECT_LOG.md](../PROJECT_LOG.md).
+- Installing everything from nothing using `docs/setup.md`.
+- The "Reset to a fresh start" steps in the demo guide.
+- A real `Degraded` application, such as a bad image.
+- Dark mode after the final build. It looked fine on the first build, on the dashboard only.
+- Other browsers and small screens.
+- The script `release.sh` run by hand from a WSL terminal. It was run through `wsl`, which uses the same script.
+- The client-side rollback warning shown when auto-sync is on. The server's refusal was tested.
+- A complete timed rehearsal of the panel demo.
+
+Tests 1 and 2 of [manual-testing.md](manual-testing.md) and the connect-repo form were clicked through on the original UI. That form wasn't changed apart from styling.

@@ -1,0 +1,297 @@
+// DeployFlow visual identity. Loaded after the upstream styles, so upstream
+// SCSS stays untouched and these rules are the only theme to maintain.
+
+body {
+    --df-font: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--df-font);
+    background: #f6f5f1;
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: var(--df-font);
+}
+
+.theme-light,
+.login {
+    --df-canvas: #f6f5f1;
+    --df-sidebar: #eeede7;
+    --df-surface: #ffffff;
+    --df-line: #e3e1da;
+    --df-ink: #20201d;
+    --df-muted: #6b6a63;
+    --df-accent: #1f5c4d;
+    --df-accent-hover: #174a3e;
+    --df-accent-soft: #e3efe9;
+    --df-warn: #a96a06;
+    --df-bad: #b3372f;
+}
+
+.theme-dark {
+    --df-canvas: #171816;
+    --df-sidebar: #1d1e1c;
+    --df-surface: #232421;
+    --df-line: #363731;
+    --df-ink: #ecebe6;
+    --df-muted: #a09f97;
+    --df-accent: #63b89f;
+    --df-accent-hover: #7cc9b2;
+    --df-accent-soft: #24382f;
+    --df-warn: #dfa64a;
+    --df-bad: #e2776e;
+}
+
+.theme-light,
+.theme-dark {
+    color: var(--df-ink);
+
+    a,
+    a:hover {
+        color: var(--df-accent);
+    }
+
+    h1,
+    h2 {
+        color: var(--df-ink);
+    }
+
+    // Sidebar
+    .sidebar {
+        padding: 0 12px;
+        color: var(--df-ink);
+        background: var(--df-sidebar);
+        border-right: 1px solid var(--df-line);
+
+        &__logo {
+            margin: 18px 0 20px;
+            margin-left: 0;
+        }
+
+        &__logo__character {
+            width: 28px;
+            height: 28px;
+        }
+
+        &__logo-container {
+            margin: 0 0 0 10px;
+        }
+
+        &__wordmark {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--df-ink);
+            cursor: pointer;
+        }
+
+        &__version {
+            font-size: 12px;
+            color: var(--df-muted);
+        }
+
+        &__collapse-button {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: var(--df-muted);
+        }
+
+        &__nav-item {
+            height: 34px;
+            margin-bottom: 2px;
+            padding: 0 8px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 34px;
+            color: var(--df-muted);
+            border-radius: 6px;
+
+            > div {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            i,
+            i.fa {
+                width: 18px;
+                margin: 0;
+                padding: 0;
+                font-size: 15px;
+                text-align: center;
+                color: var(--df-muted);
+            }
+
+            &:hover {
+                background: var(--df-line);
+            }
+
+            &--active {
+                color: var(--df-ink);
+                background: var(--df-surface);
+                box-shadow: inset 0 0 0 1px var(--df-line);
+
+                i,
+                i.fa {
+                    color: var(--df-accent);
+                }
+            }
+        }
+    }
+
+    // Upstream paints these inputs black inside its dark sidebar.
+    .sidebar .autocomplete__input,
+    .sidebar .autocomplete input {
+        color: var(--df-ink) !important;
+        background: var(--df-surface) !important;
+        border: 1px solid var(--df-line);
+        border-radius: 6px;
+        box-shadow: none;
+    }
+
+    .filters-group__title,
+    .filter__header,
+    .filter__header__label,
+    .filter__item__label {
+        color: var(--df-ink);
+    }
+
+    .sidebar--collapsed {
+        padding: 12px 8px;
+
+        .sidebar__nav-item i,
+        .sidebar__nav-item i.fa {
+            margin: 0;
+        }
+    }
+
+    // Page chrome
+    .top-bar {
+        background: var(--df-surface);
+        border-color: var(--df-line);
+
+        &__title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: none;
+            color: var(--df-ink);
+        }
+
+        &__breadcrumbs {
+            font-size: 14px;
+            color: var(--df-ink);
+
+            a {
+                color: var(--df-muted);
+            }
+        }
+    }
+
+    .page__content-wrapper,
+    .cd-layout__content {
+        background: var(--df-canvas);
+    }
+
+    // Buttons
+    .argo-button {
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 18px;
+        letter-spacing: 0;
+        text-transform: none;
+        border-radius: 6px;
+        box-shadow: none;
+    }
+
+    .argo-button--base {
+        color: #fff;
+        background: var(--df-accent);
+        border: 1px solid var(--df-accent);
+
+        &:hover {
+            color: #fff;
+            background: var(--df-accent-hover);
+        }
+    }
+
+    .argo-button--base-o,
+    .top-bar .argo-button--base {
+        color: var(--df-ink);
+        background: var(--df-surface);
+        border: 1px solid var(--df-line);
+
+        &:hover {
+            color: var(--df-ink);
+            background: var(--df-canvas);
+            border-color: var(--df-muted);
+        }
+    }
+
+    // Lists and cards
+    .white-box,
+    .argo-table-list__row,
+    .applications-list .argo-table-list__row {
+        background: var(--df-surface);
+        border: 1px solid var(--df-line);
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    .argo-table-list__head {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: none;
+        color: var(--df-muted);
+    }
+
+    .applications-list__title {
+        font-weight: 600;
+        color: var(--df-ink);
+    }
+
+    .sliding-panel__body,
+    .sliding-panel__header {
+        background: var(--df-surface);
+    }
+
+    .help-box {
+        background: var(--df-surface);
+        border: 1px solid var(--df-line);
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    .help-attribution {
+        margin: 20px 16px;
+        font-size: 13px;
+        color: var(--df-muted);
+    }
+}
+
+.login {
+    .argo-field {
+        border-bottom: 1px solid #c9c7bf;
+    }
+
+    .argo-button {
+        padding: 9px 12px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        text-transform: none;
+        letter-spacing: 0;
+        color: #fff;
+        background: var(--df-accent);
+        border-radius: 6px;
+
+        &:hover {
+            background: var(--df-accent-hover);
+        }
+    }
+
+    .argo-form-row__error-msg {
+        color: var(--df-bad);
+    }
+}

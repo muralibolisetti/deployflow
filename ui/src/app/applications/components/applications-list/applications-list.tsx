@@ -18,6 +18,7 @@ import {AppsStatusBar} from './applications-status-bar';
 import {ApplicationsSummary} from './applications-summary';
 import {ApplicationsTable} from './applications-table';
 import {ApplicationTiles} from './applications-tiles';
+import {DeploymentOverview} from './deployment-overview';
 import {ApplicationsRefreshPanel} from '../applications-refresh-panel/applications-refresh-panel';
 import {FlexTopBar} from './flex-top-bar';
 import {ViewTypeSwitcher} from './view-type-switcher';
@@ -470,7 +471,7 @@ export const ApplicationsList = (props: RouteComponentProps<any>) => {
                                                     />
                                                     <div className='applications-list'>
                                                         {apps.length === 0 && pref.projectsFilter?.length === 0 && (pref.labelsFilter || []).length === 0 ? (
-                                                            <EmptyState icon='argo-icon-application'>
+                                                            <EmptyState icon='fa fa-layer-group'>
                                                                 <h4>No applications available to you just yet</h4>
                                                                 <h5>Create new application to start managing resources in your cluster</h5>
                                                                 <button
@@ -495,6 +496,8 @@ export const ApplicationsList = (props: RouteComponentProps<any>) => {
                                                                     </DataLoader>,
                                                                     sidebarTarget?.current
                                                                 )}
+
+                                                                <DeploymentOverview />
 
                                                                 {(pref.view === 'summary' && <ApplicationsSummary applications={filteredApps} />) || (
                                                                     <Paginate

@@ -3,6 +3,7 @@ import * as React from 'react';
 import {useState} from 'react';
 import {VersionMessage} from '../../models';
 import {services} from '../../services';
+import {DEPLOYFLOW_VERSION} from '../../utils';
 import {ThemeWrapper} from '../layout/layout';
 
 interface VersionPanelProps {
@@ -15,11 +16,12 @@ type CopyState = 'success' | 'failed' | undefined;
 
 export function VersionPanel({isShown, onClose, version}: VersionPanelProps) {
     const [copyState, setCopyState] = useState<CopyState>(undefined);
-    const header = 'Argo CD Server Version';
+    const header = 'DeployFlow Version';
 
     const buildVersionTable = (version: VersionMessage): React.ReactElement => {
         const formattedVersion = {
-            'Argo CD': version.Version,
+            'DeployFlow': DEPLOYFLOW_VERSION,
+            'Engine': `Argo CD ${version.Version}`,
             'Build Date': version.BuildDate,
             'Go Version': version.GoVersion,
             'Go Compiler': version.Compiler,

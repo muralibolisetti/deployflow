@@ -99,7 +99,7 @@ Comparison is triggered in two different ways, and they behave very differently 
 | Change | How Argo CD finds out | Speed |
 |---|---|---|
 | Someone edits the cluster | Kubernetes watch: `cluster.go:792`, then `controller/cache/cache.go:635`, then `handleObjectUpdated` (`appcontroller.go:436`) | Immediate trigger |
-| Someone pushes to Git | Polling every 120s plus up to 60s jitter (`cmd/argocd-application-controller/commands/argocd_application_controller.go:45-47`), or a manual refresh | Up to about 3 minutes |
+| Someone pushes to Git | Polling every 120s plus up to 60s jitter (`cmd/argocd-application-controller/commands/argocd_application_controller.go:45-47`), or a manual refresh. Git lookups are also cached for 3 minutes (`reposerver/cache/cache.go:70`) | Up to about 6 minutes; measured 125 s, 214 s and over 240 s |
 
 Webhooks exist (`/api/webhook`) but GitHub cannot reach a local cluster, and exposing one publicly is out of scope.
 
@@ -153,7 +153,7 @@ The four "Yes" workloads in section 3, plus the `Application` and `AppProject` c
 |---|---|---|---|
 | S1 | The diff is three-way, so only fields set in Git are compared | `diff.go:74-76`, `746` | **Predicted:** `student-portal` must set `replicas: 2` explicitly or Demo 2 will not show drift |
 | S2 | Rollback does not change Git or `targetRevision` | `application.go:2303-2313`, `appcontroller.go:2010` | **Predicted:** after a rollback the app shows `OutOfSync`, because Git still has the newer commit. That is correct behaviour and the demo must explain it. Pressing Sync would redeploy the newer commit |
-| S3 | Git changes can take about 3 minutes to appear | Section 4.5 | Demo 4 must use the Refresh action, not wait |
+| S3 | Git changes can take up to about 6 minutes to appear | Section 4.5 | Demo 4 must use the Refresh action, not wait |
 | S4 | Self-heal syncs only the changed resources, and partial syncs are not recorded in history | `appcontroller.go:2510-2519`, `sync.go:408` | **Predicted:** Demo 6 will not add a history row. It should be shown through status instead |
 | S5 | Demo 5 must run before auto-sync is enabled | D9 | The brief's order already handles this |
 
@@ -247,6 +247,50 @@ Tested on 2026-11-02. Full results are in [testing.md](testing.md).
 5. S4, self-heal adds no history row: **confirmed**.
 6. Whether `/shared/app` can serve a dashboard on the same origin: **not tested yet**.
 
-## 9. Attribution
+## 9. Final DeployFlow architecture
+
+Sections 1 to 8 describe the upstream engine. This section is the design chosen in Phase 5.
+
+```mermaid
+flowchart LR
+    Browser["Browser"]
+    Git[("GitHub<br/>student-portal")]
+
+    subgraph cluster["Kubernetes (Docker Desktop, type kind)"]
+        subgraph argocd["Namespace: argocd"]
+            UI["deployflow-ui<br/>nginx, customised UI"]
+            API["argocd-server"]
+            Repo["argocd-repo-server"]
+            Ctrl["application-controller"]
+            Redis[("Redis")]
+        end
+        subgraph app["Namespace: student-portal"]
+            Workload["Deployment, ConfigMap,<br/>Service, 2 pods"]
+        end
+    end
+
+    Browser -- "port-forward 8080" --> UI
+    UI -- "/api/" --> API
+    API --> Repo
+    API --> Redis
+    Ctrl --> Repo
+    Ctrl --> Redis
+    Ctrl -- "watch and apply" --> Workload
+    Repo -- "fetch" --> Git
+```
+
+Decisions behind this design are in [PROJECT_LOG.md](../PROJECT_LOG.md):
+
+| Question | Answer | Decision |
+|---|---|---|
+| Separate or customised frontend? | Customise the upstream UI | 15 |
+| How is the UI served? | nginx beside the unmodified server | 16 |
+| Framework and styling | Upstream React and webpack, with one added theme stylesheet | 17, 18 |
+| Why is CORS not a problem? | UI and API share one origin through nginx | 16 |
+| Where do dashboard numbers come from? | The real `GET /api/v1/applications` response | 19 |
+
+The full list of changes is in [customizations.md](customizations.md).
+
+## 10. Attribution
 
 Argo CD is an open-source project of the Argo Project, licensed under Apache 2.0. All source files, behaviour and line references described here belong to upstream Argo CD. This document is our own analysis of that code.

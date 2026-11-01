@@ -1,87 +1,148 @@
 # Local setup
 
-How to start the current environment. This covers the Argo CD baseline; the DeployFlow dashboard will be added once it exists.
+How to build and start DeployFlow from nothing, and how to start it again later.
 
 This setup is for local development and academic demonstration only. Never expose it publicly.
 
 ## Requirements
 
-- Windows 11 with WSL2 and the `Ubuntu` distro
-- Docker Desktop with Kubernetes enabled (Settings, Kubernetes)
-- `kubectl`, which Docker Desktop provides
+| Tool | Used for |
+|---|---|
+| Windows 11 with WSL2 and the `Ubuntu` distro | Holds the source code |
+| Docker Desktop, with Kubernetes enabled (Settings, Kubernetes, cluster type Kind) | Runs the cluster and builds the image |
+| `kubectl` | Comes with Docker Desktop |
+| Git | Inside WSL |
+| About 4 GB of free RAM for building and 2 GB for running | |
 
-Docker Desktop's Kubernetes keeps its state between restarts, so after the first install you can skip to [Start the connections](#start-the-connections).
+## Everyday start
+
+After the first install, Docker Desktop keeps the cluster and everything in it between restarts.
+
+1. Start **Docker Desktop** and wait for **Engine running**.
+2. Check that the pods are running in PowerShell:
+
+   ```bash
+   kubectl get pods -n argocd
+   ```
+
+3. Start the connections. This opens two small windows, which reconnect by themselves when a pod restarts, and opens both pages in your browser. Keep the windows open, and close them to stop:
+
+   ```bash
+   powershell -ExecutionPolicy Bypass -File \\wsl.localhost\Ubuntu\home\murali\deployflow\deploy\local\start-deployflow.ps1
+   ```
+
+4. Sign in at <http://localhost:8080> as `admin`. To get the password:
+
+   ```bash
+   powershell -NoProfile -Command "[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String((kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath='{.data.password}')))"
+   ```
 
 ## First install
 
-Run these in PowerShell.
+### 1. Get the code
 
-Create the namespace:
+Run these inside WSL:
 
 ```bash
-kubectl --context docker-desktop create namespace argocd
+git clone https://github.com/muralibolisetti/deployflow.git ~/deployflow
 ```
 
-Install the pinned Argo CD release. The server-side flags are required, because the custom resource definitions are too large for a client-side apply:
+```bash
+cd ~/deployflow && git switch deployflow-dev
+```
 
 ```bash
-kubectl --context docker-desktop apply -n argocd --server-side --force-conflicts -f \\wsl.localhost\Ubuntu\home\murali\deployflow\manifests\install.yaml
+git clone https://github.com/muralibolisetti/student-portal.git ~/student-portal
+```
+
+### 2. Install the Argo CD engine
+
+Run these in PowerShell. Create the namespace:
+
+```bash
+kubectl create namespace argocd
+```
+
+Install the pinned release. The server-side flags are required because the custom resource definitions are too large for a client-side apply:
+
+```bash
+kubectl apply -n argocd --server-side --force-conflicts -f \\wsl.localhost\Ubuntu\home\murali\deployflow\manifests\install.yaml
 ```
 
 Wait for every pod:
 
 ```bash
-kubectl --context docker-desktop wait --for=condition=Ready pod --all -n argocd --timeout=420s
+kubectl wait --for=condition=Ready pod --all -n argocd --timeout=420s
 ```
 
-Allow plain HTTP on this local cluster. The Browser pane in the Claude desktop app rejects Argo CD's self-signed certificate:
+Let the server speak plain HTTP inside the cluster, so nginx can reach it:
 
 ```bash
-kubectl --context docker-desktop patch configmap argocd-cmd-params-cm -n argocd --type merge --patch-file \\wsl.localhost\Ubuntu\home\murali\deployflow\deploy\local\argocd-server-insecure.patch.yaml
+kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge --patch-file \\wsl.localhost\Ubuntu\home\murali\deployflow\deploy\local\argocd-server-insecure.patch.yaml
 ```
 
 ```bash
-kubectl --context docker-desktop rollout restart deployment argocd-server -n argocd
+kubectl rollout restart deployment argocd-server -n argocd
 ```
 
-## Start the connections
+### 3. Build and deploy the DeployFlow UI
 
-Each of these keeps running, so use a separate PowerShell tab for each. Both listen on this laptop only.
-
-Argo CD, at <http://localhost:8080>:
+Build the image and load it into the cluster node. The first build takes about 8 minutes, and later ones about 5:
 
 ```bash
-kubectl --context docker-desktop port-forward --address 127.0.0.1 svc/argocd-server -n argocd 8080:80
+wsl -d Ubuntu -- bash /home/murali/deployflow/deploy/local/build-ui.sh
 ```
 
-The `student-portal` app, at <http://localhost:8090>:
+Deploy it:
 
 ```bash
-kubectl --context docker-desktop port-forward --address 127.0.0.1 svc/student-portal -n student-portal 8090:80
+kubectl apply -f \\wsl.localhost\Ubuntu\home\murali\deployflow\deploy\local\deployflow-ui.yaml
 ```
 
-## Sign in
-
-The username is `admin`. This PowerShell command prints the generated local password:
+After later rebuilds, restart it to pick up the new image:
 
 ```bash
-powershell -NoProfile -Command "[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String((kubectl --context docker-desktop get secret argocd-initial-admin-secret -n argocd -o jsonpath='{.data.password}')))"
+kubectl rollout restart deployment deployflow-ui -n argocd
 ```
 
-## Check it is healthy
+### 4. Connect the sample app
 
-```bash
-kubectl --context docker-desktop get pods -n argocd
-```
+Sign in, then follow Tests 1 and 2 in [manual-testing.md](manual-testing.md).
 
-All 7 pods should show `Running`.
+## Check what is running
+
+| Check | Command |
+|---|---|
+| Kubernetes node | `kubectl get nodes` |
+| DeployFlow and engine pods | `kubectl get pods -n argocd` |
+| Sample app pods | `kubectl get pods -n student-portal` |
+| Application status | `kubectl get application -n argocd` |
+| Containers | `docker ps` |
+| Memory | `docker stats --no-stream` |
+| DeployFlow logs | `kubectl logs -n argocd deploy/deployflow-ui` |
+
+You can see the same things in Docker Desktop: open **Kubernetes** and choose a namespace, or open **Containers**.
 
 ## Save memory
 
-These three components are not needed for the demo. Scaling them down saves about 170 MB and was tested with the core features running:
+Dex, notifications and ApplicationSet aren't used by the demo. Scaling them down saves about 170 MB, and this was tested with the core features running:
 
 ```bash
-kubectl --context docker-desktop scale deployment argocd-dex-server argocd-notifications-controller argocd-applicationset-controller -n argocd --replicas=0
+kubectl scale deployment argocd-dex-server argocd-notifications-controller argocd-applicationset-controller -n argocd --replicas=0
 ```
 
 Use `--replicas=1` to restore them.
+
+## Remove everything
+
+This deletes the applications and engine from the cluster. It doesn't touch GitHub.
+
+```bash
+kubectl delete application student-portal -n argocd
+```
+
+```bash
+kubectl delete namespace student-portal argocd
+```
+
+To remove the cluster itself, use Docker Desktop: Settings, Kubernetes, turn it off.

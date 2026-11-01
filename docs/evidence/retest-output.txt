@@ -1,0 +1,48 @@
+DeployFlow retest 2026-11-02 03:18:14
+
+PASS  Sign-in with correct password - session created
+PASS  Sign-in with wrong password - HTTP 401
+PASS  API without sign-in - HTTP 401
+PASS  Repository connected - https://github.com/muralibolisetti/student-portal.git Successful
+PASS  Missing repository refused - HTTP 500: 
+PASS  Application list - student-portal:Synced/Healthy
+PASS  Resources and health - ConfigMap,Deployment,Pod,Pod,ReplicaSet,ReplicaSet,Service
+
+--- Drift ---
+PASS  Detect drift - OutOfSync after 0.9 s
+PASS  Diff data - true live 5, true target 2
+PASS  Sync fixes drift - Synced after 3.1 s, replicas 2
+
+--- Update through Git ---
+a16cfd4 Update portal to release v4
+PASS  Refresh finds the commit - 341e01a to a16cfd4 in 1.8 s, status OutOfSync
+PASS  Git change reaches the page - page shows v4 4.1 s after sync
+
+--- History and rollback ---
+PASS  History - entries: 0 1 2 3 4 5 6 7 8 9
+PASS  Rollback restores the old page - HTTP 200, page shows v3 4.5 s later
+PASS  App shows OutOfSync after rollback - Git still holds the newer commit
+PASS  Sync moves forward again - page shows v4 6.7 s later
+
+--- Failed deployment ---
+341e01a Restart pods on each release and add release script
+PASS  Failed sync is reported - HTTP 200 from sync, phase Failed
+PASS  Failure left history unchanged - 2 3 4 5 6 7 8 9 10 11
+PASS  Running app unharmed - page still v4
+PASS  Overview data shows the failure - 1 failed
+a16cfd4 Update portal to release v4
+PASS  Recovery after revert - Synced/Healthy
+
+--- Optional: automation ---
+PASS  Self-healing - restored after 1.5 s, by {"automated":true}
+PASS  Self-heal adds no history - 3 4 5 6 7 8 9 10 11 12
+PASS  Rollback refused under auto-sync - HTTP 400: 
+5df8fe1 Update portal to release v5
+FAIL  Automatic deploy from Git - page shows v5 239.9 s after the push, no clicks
+PASS  Auto-sync switched back off - manual sync restored
+
+--- Origin and proxy ---
+PASS  No cross-origin access - 0 CORS headers
+PASS  No upstream name in served page - 0 matches in index page
+
+RESULT: 27 passed, 1 failed

@@ -1,90 +1,142 @@
-**Releases:**
-[![Release Version](https://img.shields.io/github/v/release/argoproj/argo-cd?label=argo-cd)](https://github.com/argoproj/argo-cd/releases/latest)
-[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/argo-cd)](https://artifacthub.io/packages/helm/argo/argo-cd)
-[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
+# DeployFlow
 
-**Code:** 
-[![Integration tests](https://github.com/argoproj/argo-cd/workflows/Integration%20tests/badge.svg?branch=master)](https://github.com/argoproj/argo-cd/actions?query=workflow%3A%22Integration+tests%22)
-[![codecov](https://codecov.io/gh/argoproj/argo-cd/branch/master/graph/badge.svg)](https://codecov.io/gh/argoproj/argo-cd)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4486/badge)](https://bestpractices.coreinfrastructure.org/projects/4486)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/argoproj/argo-cd/badge)](https://scorecard.dev/viewer/?uri=github.com/argoproj/argo-cd)
+**A simplified GitOps-based Kubernetes application deployment and management platform.**
 
-**Social:**
-[![Twitter Follow](https://img.shields.io/twitter/follow/argoproj?style=social)](https://twitter.com/argoproj)
-[![Slack](https://img.shields.io/badge/slack-argoproj-brightgreen.svg?logo=slack)](https://argoproj.github.io/community/join-slack)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-argoproj-blue.svg?logo=linkedin)](https://www.linkedin.com/company/argoproj/)
-[![Bluesky](https://img.shields.io/badge/Bluesky-argoproj-blue.svg?style=social&logo=bluesky)](https://bsky.app/profile/argoproj.bsky.social)
+DeployFlow is a college software engineering project. It adapts the open-source [Argo CD](https://github.com/argoproj/argo-cd) project with its own interface, while using Argo CD's backend unchanged as its deployment engine.
 
-# Argo CD - Declarative Continuous Delivery for Kubernetes
+> DeployFlow is an academic adaptation. It isn't an official Argo Project product. See [Attribution](#attribution).
 
-## What is Argo CD?
+![DeployFlow application view](docs/evidence/12-application.jpg)
 
-Argo CD is a declarative GitOps continuous delivery tool for Kubernetes.
+## Problem statement
 
-![Argo CD UI](docs/assets/argocd-ui.gif)
+Deploying to Kubernetes by hand is error-prone. Changes made with `kubectl` leave no reviewable record, and clusters slowly drift away from their intended configuration. Nobody can easily answer "what should be running, and is it?"
 
-[![Argo CD Demo](https://img.youtube.com/vi/0WAm0y2vLIo/0.jpg)](https://youtu.be/0WAm0y2vLIo)
+GitOps solves this by making Git the source of truth, but full tools expose a lot of complexity. DeployFlow focuses on the essential workflow in a simple, clear interface.
 
-## Why Argo CD?
+## Objectives
 
-1. Application definitions, configurations, and environments should be declarative and version controlled.
-1. Application deployment and lifecycle management should be automated, auditable, and easy to understand.
+1. Connect a Git repository of Kubernetes configuration.
+2. View applications in a central dashboard.
+3. Deploy applications to Kubernetes.
+4. Monitor health and deployment status.
+5. Detect differences between Git and the cluster.
+6. Synchronize changes from Git.
+7. View deployment history.
+8. Roll back to an earlier version.
 
-## Who uses Argo CD?
+## Features
 
-[Official Argo CD user list](USERS.md)
+| Feature | Status |
+|---|---|
+| Git repository connection | Tested |
+| Dashboard with counts and recent deployments | Tested |
+| Application deployment | Tested |
+| Drift (OutOfSync) detection and diff view | Tested |
+| Manual synchronization | Tested |
+| Health and resource status | Tested |
+| Deployment history | Tested |
+| Rollback | Tested |
+| Custom branding and interface, light and dark | Tested |
+| Automated sync and self-healing (optional) | Tested |
+
+Results are in [docs/testing.md](docs/testing.md).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser["Browser"]
+    Git[("GitHub<br/>student-portal")]
+
+    subgraph cluster["Kubernetes"]
+        UI["deployflow-ui<br/>nginx, customised UI"]
+        API["argocd-server"]
+        Repo["argocd-repo-server"]
+        Ctrl["application-controller"]
+        Redis[("Redis")]
+        App["student-portal<br/>2 pods"]
+    end
+
+    Browser --> UI
+    UI -- "/api/" --> API
+    API --> Repo
+    API --> Redis
+    Ctrl --> Repo
+    Ctrl --> Redis
+    Ctrl -- "watch and apply" --> App
+    Repo -- "fetch" --> Git
+```
+
+The browser talks only to `deployflow-ui`, which serves the interface and forwards API calls to the unmodified Argo CD server. The controller watches the cluster, compares it with Git, and applies changes.
+
+Full details and a source-file map are in [docs/architecture.md](docs/architecture.md).
+
+## Technology stack
+
+| Area | Technology |
+|---|---|
+| GitOps engine | Argo CD `v3.5.6` |
+| Interface | React 19, TypeScript, SCSS, webpack |
+| Web server and proxy | nginx 1.27 |
+| Orchestration | Kubernetes `v1.36.1` on Docker Desktop (cluster type kind) |
+| Cache | Redis |
+| Source control | Git and GitHub |
+| Sample application | nginx with a ConfigMap, Deployment and Service |
+
+## Quick start
+
+With the system already installed, start Docker Desktop, then run this in PowerShell:
+
+```bash
+powershell -ExecutionPolicy Bypass -File \\wsl.localhost\Ubuntu\home\murali\deployflow\deploy\local\start-deployflow.ps1
+```
+
+It opens DeployFlow at <http://localhost:8080> and the sample app at <http://localhost:8090>. Sign in as `admin`. [docs/setup.md](docs/setup.md) covers the password, and how to install everything from nothing.
+
+## Screenshots
+
+| Sign in | Dashboard |
+|---|---|
+| ![Sign in](docs/evidence/10-login.jpg) | ![Dashboard](docs/evidence/11-dashboard.jpg) |
+
+| Drift diff | Kubernetes in Docker Desktop |
+|---|---|
+| ![Diff](docs/evidence/13-drift-diff.jpg) | ![Kubernetes](docs/evidence/14-docker-kubernetes.jpg) |
 
 ## Documentation
 
-To learn more about Argo CD [go to the complete documentation](https://argo-cd.readthedocs.io/).
-Check live demo at https://cd.apps.argoproj.io/.
+| Document | Contents |
+|---|---|
+| [docs/setup.md](docs/setup.md) | Install, start, stop |
+| [docs/demo-guide.md](docs/demo-guide.md) | Panel demonstration, step by step |
+| [docs/manual-testing.md](docs/manual-testing.md) | Test every feature yourself |
+| [docs/testing.md](docs/testing.md) | Test report and evidence |
+| [docs/architecture.md](docs/architecture.md) | How it works, with a source-file map |
+| [docs/customizations.md](docs/customizations.md) | What changed from upstream |
+| [docs/viva-preparation.md](docs/viva-preparation.md) | Likely questions and answers |
+| [docs/presentation-outline.md](docs/presentation-outline.md) | Slide plan |
+| [docs/progress-report.md](docs/progress-report.md) | Full project report |
+| [PROJECT_LOG.md](PROJECT_LOG.md) | Every decision, change, tool and issue |
+| [CLAUDE.md](CLAUDE.md) | Project rules and phase status |
 
-## Community
+The sample application is a separate repository: [muralibolisetti/student-portal](https://github.com/muralibolisetti/student-portal). The upstream Argo CD README is in Git history at tag `v3.5.6`.
 
-### Contribution, Discussion and Support
+## Limitations
 
- You can reach the Argo CD community and developers via the following channels:
+- Local, single-cluster, single-admin setup, for academic demonstration only. Don't expose it publicly.
+- Argo CD's history records only successful deployments. The overview shows the latest failure separately.
+- Git changes appear after a Refresh, or otherwise after polling, which can take up to about 6 minutes. Webhooks can't reach a local cluster.
+- Some technical help text still links to upstream documentation.
 
-* Q & A : [GitHub Discussions](https://github.com/argoproj/argo-cd/discussions)
-* Chat : [The #argo-cd Slack channel](https://argoproj.github.io/community/join-slack)
-* Contributors Office Hours: [Every Thursday](https://calendar.google.com/calendar/u/0/embed?src=argoproj@gmail.com) | [Agenda](https://docs.google.com/document/d/1xkoFkVviB70YBzSEa4bDnu-rUZ1sIFtwKKG1Uw8XsY8)
-* User Community meeting: [First Wednesday of the month](https://calendar.google.com/calendar/u/0/embed?src=argoproj@gmail.com) | [Agenda](https://docs.google.com/document/d/1ttgw98MO45Dq7ZUHpIiOIEfbyeitKHNfMjbY5dLLMKQ)
+## Future improvements
 
+- Webhooks for instant Git detection
+- A stored log of failed deployments
+- HTTPS with a trusted certificate
+- Multiple users with roles
+- Automated end-to-end tests
 
-Participation in the Argo CD project is governed by the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md)
+## Attribution
 
-
-### Blogs and Presentations
-
-1. [Awesome-Argo: A Curated List of Awesome Projects and Resources Related to Argo](https://github.com/terrytangyuan/awesome-argo)
-1. [Unveil the Secret Ingredients of Continuous Delivery at Enterprise Scale with Argo CD](https://akuity.io/blog/secret-ingredients-of-continuous-delivery-at-enterprise-scale-with-argocd/)
-1. [GitOps Without Pipelines With ArgoCD Image Updater](https://youtu.be/avPUQin9kzU)
-1. [Combining Argo CD (GitOps), Crossplane (Control Plane), And KubeVela (OAM)](https://youtu.be/eEcgn_gU3SM)
-1. [How to Apply GitOps to Everything - Combining Argo CD and Crossplane](https://youtu.be/yrj4lmScKHQ)
-1. [Couchbase - How To Run a Database Cluster in Kubernetes Using Argo CD](https://youtu.be/nkPoPaVzExY)
-1. [Automation of Everything - How To Combine Argo Events, Workflows & Pipelines, CD, and Rollouts](https://youtu.be/XNXJtxkUKeY)
-1. [Environments Based On Pull Requests (PRs): Using Argo CD To Apply GitOps Principles On Previews](https://youtu.be/cpAaI8p4R60)
-1. [Argo CD: Applying GitOps Principles To Manage Production Environment In Kubernetes](https://youtu.be/vpWQeoaiRM4)
-1. [Creating Temporary Preview Environments Based On Pull Requests With Argo CD And Codefresh](https://codefresh.io/continuous-deployment/creating-temporary-preview-environments-based-pull-requests-argo-cd-codefresh/)
-1. [Tutorial: Everything You Need To Become A GitOps Ninja](https://www.youtube.com/watch?v=r50tRQjisxw) 90m tutorial on GitOps and Argo CD.
-1. [Comparison of Argo CD, Spinnaker, Jenkins X, and Tekton](https://www.inovex.de/blog/spinnaker-vs-argo-cd-vs-tekton-vs-jenkins-x/)
-1. [Simplify and Automate Deployments Using GitOps with IBM Multicloud Manager 3.1.2](https://www.ibm.com/cloud/blog/simplify-and-automate-deployments-using-gitops-with-ibm-multicloud-manager-3-1-2)
-1. [GitOps for Kubeflow using Argo CD](https://v0-6.kubeflow.org/docs/use-cases/gitops-for-kubeflow/)
-1. [GitOps Toolsets on Kubernetes with CircleCI and Argo CD](https://www.digitalocean.com/community/tutorials/webinar-series-gitops-tool-sets-on-kubernetes-with-circleci-and-argo-cd)
-1. [CI/CD in Light Speed with K8s and Argo CD](https://www.youtube.com/watch?v=OdzH82VpMwI&feature=youtu.be)
-1. [Machine Learning as Code](https://www.youtube.com/watch?v=VXrGp5er1ZE&t=0s&index=135&list=PLj6h78yzYM2PZf9eA7bhWnIh_mK1vyOfU). Among other things, describes how Kubeflow uses Argo CD to implement GitOPs for ML
-1. [Argo CD - GitOps Continuous Delivery for Kubernetes](https://www.youtube.com/watch?v=aWDIQMbp1cc&feature=youtu.be&t=1m4s)
-1. [Introduction to Argo CD : Kubernetes DevOps CI/CD](https://www.youtube.com/watch?v=2WSJF7d8dUg&feature=youtu.be)
-1. [GitOps Deployment and Kubernetes - using Argo CD](https://medium.com/riskified-technology/gitops-deployment-and-kubernetes-f1ab289efa4b)
-1. [Deploy Argo CD with Ingress and TLS in Three Steps: No YAML Yak Shaving Required](https://itnext.io/deploy-argo-cd-with-ingress-and-tls-in-three-steps-no-yaml-yak-shaving-required-bc536d401491)
-1. [GitOps Continuous Delivery with Argo and Codefresh](https://codefresh.io/events/cncf-member-webinar-gitops-continuous-delivery-argo-codefresh/)
-1. [Stay up to date with Argo CD and Renovate](https://mjpitz.com/blog/2020/12/03/renovate-your-gitops/)
-1. [Setting up Argo CD with Helm](https://www.arthurkoziel.com/setting-up-argocd-with-helm/)
-1. [Applied GitOps with Argo CD](https://thenewstack.io/applied-gitops-with-argocd/)
-1. [Solving configuration drift using GitOps with Argo CD](https://www.cncf.io/blog/2020/12/17/solving-configuration-drift-using-gitops-with-argo-cd/)
-1. [Decentralized GitOps over environments](https://blogs.sap.com/2021/05/06/decentralized-gitops-over-environments/)
-1. [Getting Started with ArgoCD for GitOps Deployments](https://youtu.be/AvLuplh1skA)
-1. [Using Argo CD & Datree for Stable Kubernetes CI/CD Deployments](https://youtu.be/17894DTru2Y)
-1. [How to create Argo CD Applications Automatically using ApplicationSet? "Automation of GitOps"](https://amralaayassen.medium.com/how-to-create-argocd-applications-automatically-using-applicationset-automation-of-the-gitops-59455eaf4f72)
-1. [Progressive Delivery with Service Mesh – Argo Rollouts with Istio](https://www.cncf.io/blog/2022/12/16/progressive-delivery-with-service-mesh-argo-rollouts-with-istio/)
-
+DeployFlow is based on [Argo CD](https://github.com/argoproj/argo-cd) by the Argo Project authors, licensed under the [Apache License 2.0](LICENSE). The backend is used unmodified. Changes to the interface are listed in [docs/customizations.md](docs/customizations.md), and credit is recorded in [NOTICE](NOTICE). Argo is a trademark of its respective owners, and this project isn't affiliated with or endorsed by the Argo Project or the Cloud Native Computing Foundation.

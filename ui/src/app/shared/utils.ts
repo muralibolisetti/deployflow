@@ -39,7 +39,7 @@ export function isValidURL(url: string): boolean {
     }
 }
 
-// managed-by-url is expected to mostly if not always point to another Argo CD instance URL,
+// managed-by-url is expected to mostly if not always point to another DeployFlow instance URL,
 // so we only consider http/https valid for click-through behavior.
 export function isValidManagedByURL(url: string): boolean {
     try {
@@ -51,7 +51,9 @@ export function isValidManagedByURL(url: string): boolean {
 }
 
 export const MANAGED_BY_URL_INVALID_TEXT = 'managed-by-url: invalid url provided';
-export const MANAGED_BY_URL_INVALID_TOOLTIP = 'managed-by-url must be a valid http(s) URL for the managing Argo CD instance. The external link is disabled until this is fixed.';
+export const DEPLOYFLOW_VERSION = '0.1.0';
+
+export const MANAGED_BY_URL_INVALID_TOOLTIP = 'managed-by-url must be a valid http(s) URL for the managing DeployFlow instance. The external link is disabled until this is fixed.';
 
 export const MANAGED_BY_URL_INVALID_COLOR = '#f4c030';
 

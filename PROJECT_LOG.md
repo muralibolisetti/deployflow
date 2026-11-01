@@ -36,7 +36,9 @@ The running record of what changed and why. Newest entries go at the bottom of e
 | 22 | 2026-11-02 | Restart `student-portal` pods on each release with a `release` annotation | Wait for the ConfigMap lag | The lag made a good sync look broken during a demo | Claude |
 | 23 | 2026-11-02 | Stream the Docker build context from WSL as a tar file | Move the repo to Windows; turn on WSL integration | `ui/tsconfig.json` is a symlink, which Docker cannot read over `\\wsl.localhost` | Claude |
 | 24 | 2026-11-02 | Make `deployflow-dev` the default branch | Keep `master` | Visitors now see DeployFlow's README instead of Argo CD's | Owner |
-| 25 | 2026-11-02 | Remove the GitHub fork link with Leave fork network | Keep the fork; delete and recreate the repo | Owner wants a standalone repo. The option is permanent, but this repo has no issues, pull requests, stars or child forks to lose. `LICENSE`, `NOTICE` and the README attribution stay. Status: waiting for the owner to click it, because GitHub has no API for it | Owner |
+| 25 | 2026-11-02 | Remove the GitHub fork link with Leave fork network | Keep the fork; delete and recreate the repo | Owner wants a standalone repo. The option is permanent, but this repo has no issues, pull requests, stars or child forks to lose. `LICENSE`, `NOTICE` and the README attribution stay. Status: not confirmed. The owner clicked it, but GitHub still showed the fork link when last checked | Owner |
+| 26 | 2026-11-02 | Remove the visible Argo CD credit from the app and the repo's description and homepage | Keep the Help notice | Owner's request. The licence doesn't require credit inside the running app | Owner |
+| 27 | 2026-11-02 | Keep `LICENSE`, `NOTICE`, the README attribution and `docs/customizations.md` | Remove all credit, as the owner first asked | Apache 2.0 section 4 requires the licence, attribution notices and a statement of changes to stay with the code, and removing them would present upstream work as original in an academic project. Claude declined this part and told the owner | Claude |
 
 ## Changes
 

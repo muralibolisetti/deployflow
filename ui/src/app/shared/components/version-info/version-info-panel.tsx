@@ -21,7 +21,7 @@ export function VersionPanel({isShown, onClose, version}: VersionPanelProps) {
     const buildVersionTable = (version: VersionMessage): React.ReactElement => {
         const formattedVersion = {
             'DeployFlow': DEPLOYFLOW_VERSION,
-            'Engine': `Argo CD ${version.Version}`,
+            'Engine': version.Version,
             'Build Date': version.BuildDate,
             'Go Version': version.GoVersion,
             'Go Compiler': version.Compiler,

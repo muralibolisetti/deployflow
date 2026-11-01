@@ -33,12 +33,5 @@ export const Help = () => (
                 </div>
             </div>
         </div>
-        <p className='help-attribution'>
-            DeployFlow is an academic adaptation of the open-source{' '}
-            <a href='https://github.com/argoproj/argo-cd' target='_blank' rel='noreferrer'>
-                Argo CD
-            </a>{' '}
-            project (Apache License 2.0). It is not an official Argo Project product.
-        </p>
     </Page>
 );

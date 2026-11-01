@@ -37,8 +37,8 @@ No Go backend code was changed.
 | `ui/src/app/app.tsx` | Page title, favicon, navigation labels and icons, removed the ApplicationSets link, issue link, loads the theme |
 | `ui/src/app/sidebar/sidebar.tsx` | Logo mark, wordmark, DeployFlow version |
 | `ui/src/app/login/components/login.tsx` and `login.scss` | New centred sign-in card; removed the mascot and hero text |
-| `ui/src/app/help/components/help.tsx` | New links to DeployFlow docs, plus the attribution notice |
-| `ui/src/app/shared/components/version-info/version-info-panel.tsx` | Shows the DeployFlow version and the Argo CD engine version |
+| `ui/src/app/help/components/help.tsx` | New links to DeployFlow docs |
+| `ui/src/app/shared/components/version-info/version-info-panel.tsx` | Shows the DeployFlow and engine versions |
 | `ui/src/app/shared/components/layout/layout.tsx` | Page background colours |
 | `ui/src/app/shared/services/view-preferences-service.ts` | Light theme by default |
 | `ui/src/app/shared/utils.ts` | Added `DEPLOYFLOW_VERSION` |

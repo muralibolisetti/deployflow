@@ -95,7 +95,7 @@ The full list of 23, with alternatives and reasons, is in [PROJECT_LOG.md](../PR
 
 - **History shows only successful deployments.** The brief's "previous deployment status" isn't available per entry. The overview shows the latest failure instead.
 - **Some of the brief was adapted.** It preferred a separate frontend and a plain Kind cluster. You chose the built-in UI, and the cluster is Docker Desktop's kind-based one.
-- **The name Argo isn't removed everywhere.** It remains in the Help attribution, the version panel, some upstream help links, and technical names like the `argocd` namespace. The attribution is deliberate and required by the brief.
+- **The name Argo isn't removed everywhere.** The running app no longer credits it, but it remains in `NOTICE`, the README attribution, the docs, two upstream help links, and technical names like the `argocd` namespace. The notices stay because the licence requires them and the project is being assessed.
 - **Local demonstration only.** It uses plain HTTP inside the cluster, one admin account and no public access.
 - **The login API still returns its token in the response body** as well as the cookie. The UI uses only the cookie.
 - **Not tested:** see the list at the end of [testing.md](testing.md), including a from-scratch install and a full timed rehearsal.
